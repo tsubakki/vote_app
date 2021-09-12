@@ -9,10 +9,6 @@
             <td>{{ user.user_id }}</td>
         </tr>
         <tr>
-            <th scope="row">ユーザー名</th>
-            <td>{{ user.username }}</td>
-        </tr>
-        <tr>
             <th scope="row">氏名</th>
             <td>{{ user.full_name }}</td>
         </tr>
@@ -20,6 +16,14 @@
             <th scope="row">所属バンド</th>
             <td>
             {% for band in user.band.all %}
+                {{ band.uuid }}</br>
+            {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">投票バンド</th>
+            <td>
+            {% for band in user.vote_vote_contents %}
                 {{ band }}</br>
             {% endfor %}
             </td>

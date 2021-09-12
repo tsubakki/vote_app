@@ -1,4 +1,4 @@
-from .models import User, Band
+from .models import User, Band, Vote
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
@@ -7,14 +7,14 @@ from django.utils.translation import gettext_lazy as _
 class AdminUserAdmin(UserAdmin):
 
     fieldsets = (
-        (None, {'fields': ('user_id', 'username', 'full_name', 'password')}),
+        (None, {'fields': ('user_id', 'full_name', 'password', 'vote_contents',)}),
         # (_('Personal info'), {'fields': ()}),
         (_('Permissions'), {'fields': ('suffrage', 'is_active', 'is_staff', 'is_superuser',
                                        'band',)}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
     list_display = ('full_name',  'suffrage', 'is_staff',)
-    readonly_fields = ('user_id', 'username', 'full_name', 'last_login', 'date_joined')
+    readonly_fields = ('user_id', 'full_name', 'last_login', 'date_joined')
     search_fields = ('full_name', )
     ordering = ('date_joined',)
     filter_horizontal = ('band',)
@@ -32,4 +32,8 @@ class AdminUserAdmin(UserAdmin):
 @admin.register(Band)
 class AdminBand(admin.ModelAdmin):
     pass
+
+@admin.register(Vote)
+class AdminVote(admin.ModelAdmin):
+    readonly_fields = ('date_joined',)
 
