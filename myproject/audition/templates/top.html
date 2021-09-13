@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% if user.is_superuser %}
+    <div class="col text-center">
+        <button type="button" class="btn btn-success" onclick="location.href='{% url 'audition:vote' %}'">投票</button>
+    </div>
+{% endif %}
+{% endblock %}

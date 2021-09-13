@@ -21,6 +21,10 @@ def check_vote_num(value):
 class Band(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     name = models.CharField(_('バンド'), max_length=150, blank=False, unique=True)
+    is_first_grade_band = models.BooleanField(
+        _('一年生バンド'),
+        default=False,
+    )
 
     def __str__(self):
         return self.name
@@ -30,14 +34,6 @@ class Band(models.Model):
         verbose_name_plural = _('バンド')
 
 class Vote(models.Model):
-    # name = models.CharField( 
-    #     _('設定名'),
-    #     max_length=150, 
-    #     blank=False, 
-    #     unique=False,
-    #     default="投票設定",
-    #     )
-
     band_num = models.IntegerField(
         _('通過バンド数(一年生バンド数を含む)'),
         validators=[check_vote_num],
@@ -128,6 +124,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     suffrage = models.BooleanField(
         _('投票権'),
         default=True,
+    )
+
+    vote_finish = models.BooleanField(
+        _('投票済'),
+        default=False,
     )
 
     is_active = models.BooleanField(
