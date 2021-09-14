@@ -1,6 +1,26 @@
 {% extends "base.html" %}
 
 {% block body %}
+<table class="table" >
+    <caption style="caption-side: top;">投票結果</caption>
+    <thead>
+        <tr>
+            <th scope="col">順位</th>
+            <th scope="col">バンド名</th>
+            <th scope="col">票数</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for band_name, count, rank in rank_tuple  %}
+            <tr>
+                <th scope="row">{{rank}}</th>
+                <td>{{band_name}}</td>
+                <td>{{count}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 <div class="container">
     {% if duplicate_error %}
         <p style="color: coral;">{{duplicate_error}}</p>
@@ -11,14 +31,6 @@
     <form method="POST">
       {% csrf_token %}
         <div class="form-group">
-            {% for i in first_grade_band_num  %}
-                <select id="band" class="form-control" name=band{{i}} style="margin-top: 10px; margin-bottom: 10px; background-color: rgb(216, 214, 214);">
-                    <option>{{i}}バンド目</option>
-                    {% for band in first_grade_band %}
-                        <option value={{band.uuid}}>{{band.name}}</option> -->
-                    {% endfor %}
-                </select>
-            {% endfor %}
             {% for i in band_num  %}
                 <select id="band" class="form-control" name=band{{i}} style="margin-top: 10px; margin-bottom: 10px;">
                     <option>{{i}}バンド目</option>
@@ -28,7 +40,8 @@
                 </select>
             {% endfor %}
         </div>
-        <button type="submit" class="btn btn-primary btn-block" value="Vote">投票する</button>
+        <button type="submit" class="btn btn-primary btn-block" value="Vote">決定</button>
     </form>
-</div>
+  </div>
+<br>
 {% endblock %}

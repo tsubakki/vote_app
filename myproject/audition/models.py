@@ -45,14 +45,26 @@ class Vote(models.Model):
         validators=[check_vote_num],
         default=1,
         )
+    
+    pass_band = ListCharField(
+        base_field=models.CharField(max_length=150),
+        size=50,
+        max_length=(50 * 151),
+        blank=True,
+        editable=False,
+    )
+
+    is_work = models.BooleanField(
+        _('投票中'),
+        default=False,
+    )
 
     date_joined = models.DateTimeField(
         _('作成日'),
-        default=timezone.now)
+        auto_now=True)
     
     def __str__(self):
         date = str(self.date_joined)
-        # 2021-09-12 12:46:25.779426+00:00
         return '{}年{}月{}日 {}時{}分{}秒'.format(date[:4],date[5:7],date[8:10],date[11:13],date[14:16],date[17:19])
     
     class Meta:

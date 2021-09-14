@@ -13,7 +13,10 @@ from .models import Vote, Band
 User = get_user_model()
 
 class Top(generic.TemplateView):
-    template_name = 'top.html'
+    
+    def get(self, *args, **kwargs):
+        vote = Vote.objects.latest('date_joined')
+        return render(self.request,'top.html' ,{'vote':vote})
 
 class SignUpView(generic.CreateView):
     form_class = UserCreateForm
@@ -75,6 +78,101 @@ class VoteView(LoginRequiredMixin, generic.View):
                                                     'no_vote_error':no_vote_error
                                                     })
 
+class VoteAdminResultView(generic.TemplateView):
+
+    def get_band_name_dict(self, all_band):
+        band_name_dict = {}
+        for band in all_band:
+            band_name_dict[str(band.name)] = 0
+        return band_name_dict
+
+    def get_count(self, band_name_dict , all_user):
+        for user in all_user:
+            for uuid in user.vote_contents:
+                band_name = Band.objects.get(uuid=uuid).name
+                band_name_dict[band_name] += 1
+        return band_name_dict
+    
+    def get_rank(self, seq):
+        rank = 1
+        tmp_rank = 1
+        pre_count = seq[0][1]
+        seq[0] += (rank,)
+        for i in range(1,len(seq)):
+            count = seq[i][1]
+            if count == pre_count:
+                tmp_rank += 1
+            else:
+                tmp_rank += 1
+                rank = tmp_rank
+            seq[i] += (rank,)
+            pre_count = count
+        return seq
+    
+    def no_vote(self,seq):
+        for i , ans in enumerate(seq):
+            if str(f'{i+1}バンド目') == str(ans):
+                return True
+        return False
+    
+    def has_duplicate(self,seq):
+        return len(seq) != len(set(seq))
+            
+    def get(self, *args, **kwargs):
+        all_user = User.objects.all()
+        band_name_dict = self.get_band_name_dict(Band.objects.all())
+        band_name_dict = self.get_count(band_name_dict,all_user)
+        rank_tuple = sorted(band_name_dict.items(), key=lambda x:x[1], reverse=True)
+        rank_tuple = self.get_rank(rank_tuple)
+
+        vote = Vote.objects.latest('date_joined')
+        band_num = [i for i in range(1,vote.band_num + 1)]
+        all_band = Band.objects.all()
+        
+        return render(self.request,'admin_result.html', {
+                                                        'rank_tuple':rank_tuple,
+                                                        'band_num':band_num, 
+                                                        'all_band':all_band}
+                                                        )
+    
+    def post(self, *args, **kwargs):
+        all_user = User.objects.all()
+        band_name_dict = self.get_band_name_dict(Band.objects.all())
+        band_name_dict = self.get_count(band_name_dict,all_user)
+        rank_tuple = sorted(band_name_dict.items(), key=lambda x:x[1], reverse=True)
+        rank_tuple = self.get_rank(rank_tuple)
+
+        vote = Vote.objects.latest('date_joined')
+        band_num = [i for i in range(1,vote.band_num + 1)]
+        all_band = Band.objects.all()
+        ans = []
+        for i in range(vote.band_num):
+            ans.append(self.request.POST[f'band{i+1}'])
+        
+        if self.has_duplicate(ans) == True:
+            duplicate_error = "同じバンドを選択しています"
+        else:
+            duplicate_error = None
+        
+        if self.no_vote(ans) == True:
+            no_vote_error = "無選択が存在しています"
+        else:
+            no_vote_error = None
+
+        if (duplicate_error == None) and (no_vote_error == None):
+            vote.pass_band = ans
+            print(ans)
+            vote.save()
+            return render(self.request,'result_done.html')
+        else:
+            return render(self.request,'admin_result.html',{
+                                                    'rank_tuple':rank_tuple,
+                                                    'band_num':band_num, 
+                                                    'all_band':all_band,
+                                                    'duplicate_error':duplicate_error, 
+                                                    'no_vote_error':no_vote_error,
+                                                    })
+
 class ProfileView(LoginRequiredMixin, generic.View):
 
     def get_band_name(self,seq):
@@ -86,7 +184,6 @@ class ProfileView(LoginRequiredMixin, generic.View):
     def get(self, *args, **kwargs):
         vote_contents = self.request.user.vote_contents
         band_name = self.get_band_name(vote_contents)
-        print(band_name)
         return render(self.request,'registration/profile.html',{'band_name':band_name})
 
 

@@ -6,6 +6,7 @@ app_name = 'audition'
 
 urlpatterns = [
     path('vote/', views.VoteView.as_view(), name='vote'),
+    path('vote/admin_result/', views.VoteAdminResultView.as_view(), name='admin_result'),
     path('accounts/profile/', views.ProfileView.as_view(), name='accounts/profile'),
     path('accounts/signup/', views.SignUpView.as_view(), name='accounts/signup'),
     path('accounts/delete_confirm', TemplateView.as_view(template_name='registration/delete_confirm.html'), name='accounts/delete-confirmation'),

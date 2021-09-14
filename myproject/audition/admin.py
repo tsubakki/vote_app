@@ -60,5 +60,6 @@ class AdminBand(admin.ModelAdmin):
 
 @admin.register(Vote)
 class AdminVote(admin.ModelAdmin):
+    list_display = ('date_joined',  'is_work',)
     readonly_fields = ('date_joined',)
 
