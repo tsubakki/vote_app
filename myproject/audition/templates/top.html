@@ -1,12 +1,21 @@
 {% extends "base.html" %}
-
 {% block body %}
-{% if user.is_authenticated and vote.is_work%}
-    <div class="col text-center">
-        <button type="button" class="btn btn-success" onclick="location.href='{% url 'audition:vote' %}'">投票</button>
+<link href="../static/css/vote_button.css" rel="stylesheet" />
+<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+{% if user.is_authenticated and vote.is_active and vote_button_check%}
+    <div class="col text-center justify-content-center" style="margin-top: 30%;">
+        <button type="button" class="btn-circle-stitch fas fa-vote-yea fa-3x" onclick="location.href='{% url 'audition:vote' %}'"></button>
+        <div style="margin-top: 5%; font-size: large;">{{vote_finish_user_count}}/{{vote_user_count}}</div>
     </div>
 {% endif %}
-    <div class="col text-center">
-        <button type="button" class="btn btn-success" onclick="location.href='{% url 'audition:admin_result' %}'">結果</button>
+{% if user.is_authenticated and admin_result_button_check%}
+    <div class="col text-center" style="margin-top: 10%;">
+        <button type="button" class="btn btn-success" onclick="location.href='{% url 'audition:admin_result' %}'">結果の通知</button>
     </div>
+{% endif %}
+{% if user.is_superuser and result_button_check%}
+    <div class="col text-center" style="margin-top: 10%;">
+        <button type="button" class="btn btn-success" onclick="location.href='{% url 'audition:result' %}'">結果の確認</button>
+    </div>
+{% endif %}
 {% endblock %}

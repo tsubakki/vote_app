@@ -13,6 +13,14 @@
             <td>{{ user.full_name }}</td>
         </tr>
         <tr>
+            <th scope="row">投票権</th>
+            {% if user.suffrage %}
+                <td>◯</td>
+            {% else %}
+                <td>×</td>
+            {% endif %}
+        </tr>
+        <tr>
             <th scope="row">所属バンド</th>
             <td>
             {% for band in user.band.all %}

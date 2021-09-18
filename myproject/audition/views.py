@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.views import generic
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import (
      get_user_model, logout as auth_logout,
@@ -9,14 +9,58 @@ from django.contrib.auth import (
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from .forms import UserCreateForm
 from .models import Vote, Band
+import random
 
 User = get_user_model()
+
+def VoteButtonCheck(user):
+    vote = Vote.objects.latest('date_joined')
+    if vote.is_active and user.suffrage:
+        return True
+    else:
+        return False
+
+def AdminResultButtonCheck():
+    vote = Vote.objects.latest('date_joined')
+    vote_user_count = User.objects.filter(suffrage=True).count()
+    vote_finish_user_count = User.objects.filter(suffrage=True, vote_finish=True).count()
+    announce = vote.announce
+    is_active = vote.is_active
+    if is_active == False and announce == False and vote_finish_user_count == vote_user_count:
+        return True
+    else:
+        return False
+
+def ResultButtonCheck():
+    vote = Vote.objects.latest('date_joined')
+    vote_user_count = User.objects.filter(suffrage=True).count()
+    vote_finish_user_count = User.objects.filter(suffrage=True, vote_finish=True).count()
+    announce = vote.announce
+    is_active = vote.is_active
+    result_ok = False
+    if vote.pass_band != []:
+        result_ok = True
+    if result_ok and announce and is_active == False and vote_finish_user_count == vote_user_count:
+        return True
+    else:
+        return False
 
 class Top(generic.TemplateView):
     
     def get(self, *args, **kwargs):
         vote = Vote.objects.latest('date_joined')
-        return render(self.request,'top.html' ,{'vote':vote})
+        vote_user_count = User.objects.filter(suffrage=True).count()
+        vote_finish_user_count = User.objects.filter(suffrage=True, vote_finish=True).count()
+        vote_button_check = VoteButtonCheck(self.request.user)
+        admin_result_button_check = AdminResultButtonCheck()
+        result_button_check = ResultButtonCheck()
+        return render(self.request,'top.html' ,{'vote':vote, 
+                                                'vote_finish_user_count':vote_finish_user_count, 
+                                                'vote_user_count':vote_user_count, 
+                                                'vote_button_check':vote_button_check, 
+                                                'admin_result_button_check':admin_result_button_check, 
+                                                'result_button_check':result_button_check,
+                                                })
 
 class SignUpView(generic.CreateView):
     form_class = UserCreateForm
@@ -36,6 +80,11 @@ class VoteView(LoginRequiredMixin, generic.View):
         return len(seq) != len(set(seq))
     
     def get(self, *args, **kwargs):
+
+        # 勝手に入らないようにリダイレクトの設定を追加する
+        vote_button_check = VoteButtonCheck(self.request.user)
+        if vote_button_check == False:
+            return redirect('top')
         vote = Vote.objects.latest('date_joined')
         first_grade_band = Band.objects.filter(is_first_grade_band = True)
         all_band = Band.objects.all()
@@ -119,6 +168,9 @@ class VoteAdminResultView(generic.TemplateView):
         return len(seq) != len(set(seq))
             
     def get(self, *args, **kwargs):
+        admin_result_button_check = AdminResultButtonCheck()
+        if self.request.user.is_superuser == False or admin_result_button_check == False:
+            return redirect('top')
         all_user = User.objects.all()
         band_name_dict = self.get_band_name_dict(Band.objects.all())
         band_name_dict = self.get_count(band_name_dict,all_user)
@@ -172,6 +224,24 @@ class VoteAdminResultView(generic.TemplateView):
                                                     'duplicate_error':duplicate_error, 
                                                     'no_vote_error':no_vote_error,
                                                     })
+
+class VoteResultView(LoginRequiredMixin, generic.View):
+
+    def get_band_name(self,seq):
+        band_name = []
+        for uuid in seq:
+            band_name.append(Band.objects.get(uuid = uuid).name)
+        return band_name
+
+    def get(self, *args, **kwargs):
+        result_button_check = ResultButtonCheck()
+        if result_button_check == False:
+            return redirect('top')
+        else:
+            vote = Vote.objects.latest('date_joined')
+            band_name = self.get_band_name(vote.pass_band)
+            random.shuffle(band_name)
+            return render(self.request,'result.html',{'band_name':band_name,})
 
 class ProfileView(LoginRequiredMixin, generic.View):
 

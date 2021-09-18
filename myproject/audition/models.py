@@ -54,8 +54,13 @@ class Vote(models.Model):
         editable=False,
     )
 
-    is_work = models.BooleanField(
+    is_active = models.BooleanField(
         _('投票中'),
+        default=False,
+    )
+
+    announce = models.BooleanField(
+        _('結果の公開'),
         default=False,
     )
 
@@ -135,7 +140,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     suffrage = models.BooleanField(
         _('投票権'),
-        default=True,
+        default=False,
     )
 
     vote_finish = models.BooleanField(

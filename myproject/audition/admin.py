@@ -60,6 +60,11 @@ class AdminBand(admin.ModelAdmin):
 
 @admin.register(Vote)
 class AdminVote(admin.ModelAdmin):
-    list_display = ('date_joined',  'is_work',)
+    list_display = ('date_joined',  'is_active', 'announce')
     readonly_fields = ('date_joined',)
+    actions = ['change_pass_band_init']
+    def change_pass_band_init(self, request, queryset):
+        queryset.update(pass_band=[]
+                        )
+    change_pass_band_init.short_description = '選択された 投票設定 の投票結果を削除'
 
