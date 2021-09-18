@@ -10,8 +10,14 @@ from django.core.exceptions import ValidationError
 from django_mysql.models import ListCharField
 
 def check_vote_num(value):
-        if value < 0:
-            raise ValidationError('マイナスの値は設定できません')
+    if value < 0:
+        raise ValidationError('マイナスの値は設定できません')
+
+def check_auth_key(value):
+    f = open('auth_key.txt', 'r')
+    auth_key = f.read()
+    if value != auth_key:
+        raise ValidationError('認証キーが違います')
 
 class Band(models.Model):
     uuid = models.UUIDField(
@@ -86,18 +92,18 @@ class Vote(models.Model):
 
 class UserManager(BaseUserManager):
     # use_in_migrations = True
-    def _create_user(self, user_id, full_name, password, **extra_fields):
-        user = self.model(user_id=user_id, full_name=full_name,  **extra_fields)
+    def _create_user(self, user_id, full_name, auth_key, password, **extra_fields):
+        user = self.model(user_id=user_id, full_name=full_name, auth_key=auth_key, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, user_id, full_name, password=None, **extra_fields):
+    def create_user(self, user_id, full_name, auth_key, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(user_id, full_name, password, **extra_fields)
+        return self._create_user(user_id, full_name, auth_key, password, **extra_fields)
 
-    def create_superuser(self, user_id, full_name, password, **extra_fields):
+    def create_superuser(self, user_id, full_name, auth_key, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -106,7 +112,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(user_id, full_name, password, **extra_fields)
+        return self._create_user(user_id, full_name, auth_key, password, **extra_fields)
 
 
 
@@ -114,12 +120,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
 
-    full_name = models.CharField(_('氏名'), max_length=150, blank=False, unique=False)
+    full_name = models.CharField(
+        _('氏名'), 
+        max_length=150, 
+        blank=False, 
+        unique=False
+    )
 
     user_id = models.CharField(
         _('ユーザーID'),
         max_length=150,
         unique=True,
+    )
+
+    auth_key = models.CharField(
+        _('認証キー'), 
+        max_length=150, 
+        validators=[check_auth_key],
     )
 
     band = models.ManyToManyField(
