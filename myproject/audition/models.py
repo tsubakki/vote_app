@@ -9,18 +9,24 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django_mysql.models import ListCharField
 
-def check_user_id(value):
-    if value[0] != '@':
-        raise ValidationError('ユーザーIDの先頭には「@」を付けてください')
-
 def check_vote_num(value):
-    if value < 0:
-        raise ValidationError('マイナスの値は設定できません')
-
+        if value < 0:
+            raise ValidationError('マイナスの値は設定できません')
 
 class Band(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
-    name = models.CharField(_('バンド'), max_length=150, blank=False, unique=True)
+    uuid = models.UUIDField(
+        default=uuid.uuid4, 
+        primary_key=True, 
+        editable=False
+    )
+
+    name = models.CharField(
+        _('バンド名'), 
+        max_length=150, 
+        blank=False, 
+        unique=True
+    )
+
     is_first_grade_band = models.BooleanField(
         _('一年生バンド'),
         default=False,
@@ -34,17 +40,18 @@ class Band(models.Model):
         verbose_name_plural = _('バンド')
 
 class Vote(models.Model):
+ 
     band_num = models.IntegerField(
         _('通過バンド数(一年生バンド数を含む)'),
         validators=[check_vote_num],
         default=7,
-        )
+    )
 
     first_grade_band_num = models.IntegerField(
         _('一年生バンド数'),
         validators=[check_vote_num],
         default=1,
-        )
+    )
     
     pass_band = ListCharField(
         base_field=models.CharField(max_length=150),
@@ -78,8 +85,7 @@ class Vote(models.Model):
 
 
 class UserManager(BaseUserManager):
-    use_in_migrations = True
-
+    # use_in_migrations = True
     def _create_user(self, user_id, full_name, password, **extra_fields):
         user = self.model(user_id=user_id, full_name=full_name,  **extra_fields)
         user.set_password(password)
@@ -114,7 +120,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         _('ユーザーID'),
         max_length=150,
         unique=True,
-        validators=[check_user_id],
     )
 
     band = models.ManyToManyField(
@@ -151,12 +156,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(
         _('active'),
         default=True,
-        help_text=_(
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
-        ),
     )
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    
+    date_joined = models.DateTimeField(
+        _('date joined'), 
+        default=timezone.now
+    )
 
     objects = UserManager()
 

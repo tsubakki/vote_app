@@ -46,21 +46,24 @@ def ResultButtonCheck():
         return False
 
 class Top(generic.TemplateView):
-    
     def get(self, *args, **kwargs):
-        vote = Vote.objects.latest('date_joined')
-        vote_user_count = User.objects.filter(suffrage=True).count()
-        vote_finish_user_count = User.objects.filter(suffrage=True, vote_finish=True).count()
-        vote_button_check = VoteButtonCheck(self.request.user)
-        admin_result_button_check = AdminResultButtonCheck()
-        result_button_check = ResultButtonCheck()
-        return render(self.request,'top.html' ,{'vote':vote, 
-                                                'vote_finish_user_count':vote_finish_user_count, 
-                                                'vote_user_count':vote_user_count, 
-                                                'vote_button_check':vote_button_check, 
-                                                'admin_result_button_check':admin_result_button_check, 
-                                                'result_button_check':result_button_check,
-                                                })
+        try:
+            vote = Vote.objects.latest('date_joined')
+            vote_user_count = User.objects.filter(suffrage=True).count()
+            vote_finish_user_count = User.objects.filter(suffrage=True, vote_finish=True).count()
+            vote_button_check = VoteButtonCheck(self.request.user)
+            admin_result_button_check = AdminResultButtonCheck()
+            result_button_check = ResultButtonCheck()
+            return render(self.request,'top.html' ,{
+                'vote':vote, 
+                'vote_finish_user_count':vote_finish_user_count, 
+                'vote_user_count':vote_user_count, 
+                'vote_button_check':vote_button_check, 
+                'admin_result_button_check':admin_result_button_check, 
+                'result_button_check':result_button_check,
+            })
+        except:
+            return render(self.request,'top.html')
 
 class SignUpView(generic.CreateView):
     form_class = UserCreateForm
@@ -215,7 +218,7 @@ class VoteAdminResultView(generic.TemplateView):
             vote.pass_band = ans
             print(ans)
             vote.save()
-            return render(self.request,'result_done.html')
+            return render(self.request,'admin_result_done.html')
         else:
             return render(self.request,'admin_result.html',{
                                                     'rank_tuple':rank_tuple,
