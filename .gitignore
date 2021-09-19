@@ -134,5 +134,12 @@ dmypy.json
 # SECRET_KEY
 secret_key.txt
 
+# auth_key
+auth_key.txt
+
 # .DS_Store
 .DS_Store
+
+# migrations
+myproject/audition/migrations/*
+!__init__.py
