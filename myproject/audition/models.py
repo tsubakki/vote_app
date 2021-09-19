@@ -183,7 +183,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['full_name']
+    REQUIRED_FIELDS = ['full_name','auth_key']
 
     class Meta:
         db_table = 'User'

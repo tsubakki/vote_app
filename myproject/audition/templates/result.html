@@ -1,19 +1,23 @@
 {% extends "base.html" %}
 
 {% block body %}
-<!-- <script>
-    if("{{ result_button_check }}" == "False"){
-        window.onload = function() {
-            window.location.href = "{% url 'top' %}"
-        }
-    }
-</script> -->
 <table class="table" >
     <caption style="caption-side: top;">通過バンド</caption>
     <tbody>
         {% for name in band_name  %}
             <tr>
                 <td>{{name}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<table class="table" >
+    <caption style="caption-side: top;">所属バンドの投票数</caption>
+    <tbody>
+        {% for name,count in count_tuple  %}
+            <tr>
+                <td>{{name}}</td>
+                <td>{{count}}票</td>
             </tr>
         {% endfor %}
     </tbody>

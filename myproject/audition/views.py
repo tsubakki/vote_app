@@ -46,6 +46,7 @@ def ResultButtonCheck():
         return False
 
 class Top(generic.TemplateView):
+
     def get(self, *args, **kwargs):
         try:
             vote = Vote.objects.latest('date_joined')
@@ -216,7 +217,6 @@ class VoteAdminResultView(generic.TemplateView):
 
         if (duplicate_error == None) and (no_vote_error == None):
             vote.pass_band = ans
-            print(ans)
             vote.save()
             return render(self.request,'admin_result_done.html')
         else:
@@ -235,6 +235,23 @@ class VoteResultView(LoginRequiredMixin, generic.View):
         for uuid in seq:
             band_name.append(Band.objects.get(uuid = uuid).name)
         return band_name
+    
+    def get_vote_count(self):
+        band_list = self.request.user.band.all()
+        count_dict = {}
+        for band in band_list:
+            count_dict[str(band.uuid)] = 0
+        
+        all_user = User.objects.all()
+        for user in all_user:
+            for uuid in user.vote_contents:
+                if str(uuid) in count_dict:
+                    count_dict[str(uuid)] += 1
+        
+        for band in band_list:
+            count_dict[Band.objects.get(uuid = band.uuid).name] =  count_dict.pop(str(band.uuid))
+
+        return count_dict.items()
 
     def get(self, *args, **kwargs):
         result_button_check = ResultButtonCheck()
@@ -244,7 +261,8 @@ class VoteResultView(LoginRequiredMixin, generic.View):
             vote = Vote.objects.latest('date_joined')
             band_name = self.get_band_name(vote.pass_band)
             random.shuffle(band_name)
-            return render(self.request,'result.html',{'band_name':band_name,})
+            count_tuple = self.get_vote_count()
+            return render(self.request,'result.html',{'band_name':band_name, 'count_tuple':count_tuple,})
 
 class ProfileView(LoginRequiredMixin, generic.View):
 
@@ -253,11 +271,11 @@ class ProfileView(LoginRequiredMixin, generic.View):
         for uuid in seq:
             band_name.append(Band.objects.get(uuid = uuid).name)
         return band_name
-
+    
     def get(self, *args, **kwargs):
         vote_contents = self.request.user.vote_contents
         band_name = self.get_band_name(vote_contents)
-        return render(self.request,'registration/profile.html',{'band_name':band_name})
+        return render(self.request,'registration/profile.html',{'band_name':band_name,})
 
 
 class DeleteView(LoginRequiredMixin, generic.View):
