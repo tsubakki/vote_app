@@ -60,7 +60,7 @@ class AdminBand(admin.ModelAdmin):
 
 @admin.register(Vote)
 class AdminVote(admin.ModelAdmin):
-    list_display = ('date_joined',  'is_active', 'announce')
+    list_display = ('date_joined', 'is_active', 'announce')
     readonly_fields = ('date_joined',)
     actions = ['change_pass_band_init']
     def change_pass_band_init(self, request, queryset):

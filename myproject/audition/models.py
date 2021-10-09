@@ -19,6 +19,15 @@ def check_auth_key(value):
     if value != auth_key:
         raise ValidationError('認証キーが違います')
 
+def check_vote_setting(value):
+    vote = Vote.objects.all()
+    print("ここ")
+    print(vote)
+    if len(vote) == 1:
+        if vote[0].uuid != value:
+            raise ValidationError('すでに設定が存在しています')
+
+
 class Band(models.Model):
     uuid = models.UUIDField(
         default=uuid.uuid4, 
@@ -46,6 +55,14 @@ class Band(models.Model):
         verbose_name_plural = _('バンド')
 
 class Vote(models.Model):
+
+    uuid = models.UUIDField(
+        _('設定ID(変更しないでください)'),
+        validators=[check_vote_setting],
+        default=uuid.uuid4, 
+        primary_key=True,
+        blank=False,
+        )
  
     band_num = models.IntegerField(
         _('通過バンド数(一年生バンド数を含む)'),
